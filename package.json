@@ -1,0 +1,23 @@
+{
+  "name": "evolvex-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Autonomous AI strategy evolution engine powered by Reactive Network",
+  "scripts": {
+    "build": "pnpm --filter \"@evolvex/*\" run build",
+    "dev": "pnpm --parallel run dev",
+    "lint": "pnpm --filter \"@evolvex/*\" run lint",
+    "test": "pnpm --filter \"@evolvex/*\" run test",
+    "typecheck": "pnpm --filter \"@evolvex/*\" run typecheck"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.1",
+    "prettier": "^3.5.0",
+    "typescript": "^5.7.3"
+  },
+  "packageManager": "pnpm@12.18.0",
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
+

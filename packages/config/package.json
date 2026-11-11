@@ -1,0 +1,14 @@
+{
+  "name": "@evolvex/config",
+  "version": "0.1.0",
+  "private": true,
+  "main": "index.js",
+  "exports": {
+    "./eslint": "./eslint.json",
+    "./tsconfig": "./tsconfig.json"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3"
+  }
+}
+

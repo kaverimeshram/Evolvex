@@ -1,0 +1,188 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum EventStatus {
+  PENDING
+  ANALYZED
+  PROCESSED
+  FAILED
+}
+
+enum StrategyStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+  MUTATED
+  REJECTED
+}
+
+enum ExperimentStatus {
+  SCHEDULED
+  RUNNING
+  COMPLETED
+  HALTED
+  INCONCLUSIVE
+}
+
+enum MutationType {
+  PARAMETRIC_TWEAK
+  CROSSOVER
+  VOLATILITY_ADAPT
+  GAS_OPTIMIZATION
+  RISK_TIGHTEN
+}
+
+enum EvolutionNodeStatus {
+  ACTIVE
+  SUPERSEDED
+  PRUNED
+}
+
+enum TransactionStatus {
+  SUBMITTED
+  CONFIRMED
+  REVERTED
+  TIMEOUT
+}
+
+model BlockchainEvent {
+  id              String      @id @default(uuid())
+  chainId         Int
+  contractAddress String
+  eventSignature  String
+  blockNumber     BigInt
+  txHash          String
+  payload         Json
+  status          EventStatus @default(PENDING)
+  detectedAt      DateTime    @default(now())
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  @@index([chainId, contractAddress])
+  @@index([txHash])
+  @@index([status])
+  @@index([detectedAt])
+}
+
+model Strategy {
+  id               String         @id @default(uuid())
+  name             String
+  version          String         @default("1.0.0")
+  status           StrategyStatus @default(DRAFT)
+  description      String         @default("")
+  parameters       Json
+  riskScore        Float          @default(3.0)
+  parentStrategyId String?
+  generation       Int            @default(0)
+  fitnessScore     Float          @default(0.0)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  // Self-referential lineage relation
+  parentStrategy    Strategy?  @relation("StrategyLineage", fields: [parentStrategyId], references: [id], onDelete: SetNull)
+  derivedStrategies Strategy[] @relation("StrategyLineage")
+
+  // Experiments referencing this strategy
+  candidateInExperiments Experiment[] @relation("CandidateStrategy")
+  baselineInExperiments  Experiment[] @relation("BaselineStrategy")
+
+  // Evolution tree nodes and transactions
+  evolutionNodes EvolutionNode[]
+  transactions   Transaction[]
+
+  @@index([status])
+  @@index([generation])
+  @@index([fitnessScore])
+}
+
+model Experiment {
+  id                  String           @id @default(uuid())
+  name                String
+  hypothesis          String
+  candidateStrategyId String
+  baselineStrategyId  String
+  status              ExperimentStatus @default(SCHEDULED)
+  sampleSize          Int              @default(100)
+  durationSeconds     Int              @default(3600)
+  startedAt           DateTime?
+  endedAt             DateTime?
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+
+  candidateStrategy Strategy @relation("CandidateStrategy", fields: [candidateStrategyId], references: [id], onDelete: Cascade)
+  baselineStrategy  Strategy @relation("BaselineStrategy", fields: [baselineStrategyId], references: [id], onDelete: Cascade)
+
+  result ExperimentResult?
+
+  @@index([status])
+  @@index([candidateStrategyId])
+  @@index([baselineStrategyId])
+  @@index([createdAt])
+}
+
+model ExperimentResult {
+  id                     String   @id @default(uuid())
+  experimentId           String   @unique
+  winnerStrategyId       String
+  metricImprovementPct   Float
+  pValue                 Float
+  statisticalSignificance Boolean  @default(false)
+  gasEfficiencyDelta     Float    @default(0.0)
+  summary                String
+  evaluatedAt            DateTime @default(now())
+  createdAt              DateTime @default(now())
+
+  experiment Experiment @relation(fields: [experimentId], references: [id], onDelete: Cascade)
+
+  @@index([experimentId])
+  @@index([winnerStrategyId])
+}
+
+model EvolutionNode {
+  id           String              @id @default(uuid())
+  strategyId   String
+  parentNodeId String?
+  generation   Int
+  fitnessScore Float               @default(0.0)
+  mutationType MutationType        @default(PARAMETRIC_TWEAK)
+  changes      Json
+  status       EvolutionNodeStatus @default(ACTIVE)
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+
+  strategy   Strategy        @relation(fields: [strategyId], references: [id], onDelete: Cascade)
+  parentNode EvolutionNode?  @relation("EvolutionTree", fields: [parentNodeId], references: [id], onDelete: SetNull)
+  childNodes EvolutionNode[] @relation("EvolutionTree")
+
+  @@index([strategyId])
+  @@index([generation])
+  @@index([status])
+}
+
+model Transaction {
+  id         String            @id @default(uuid())
+  chainId    Int
+  txHash     String            @unique
+  fromAddress String
+  toAddress   String
+  value      String            @default("0")
+  gasUsed    String?
+  status     TransactionStatus @default(SUBMITTED)
+  error      String?
+  strategyId String?
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+
+  strategy Strategy? @relation(fields: [strategyId], references: [id], onDelete: SetNull)
+
+  @@index([txHash])
+  @@index([chainId, status])
+  @@index([strategyId])
+}
+
