@@ -1,6 +1,17 @@
 import React from 'react';
 import { MockDataBadge } from '../../components/MockDataBadge';
-import { Settings, Shield, Cpu, Layers, Terminal } from 'lucide-react';
+import { Settings, Shield, Cpu, Layers, Terminal, CheckCircle2, Clock } from 'lucide-react';
+
+const STATUS_MATRIX = [
+  { feature: 'Monorepo foundation', status: 'Implemented', done: true },
+  { feature: 'Dashboard foundation', status: 'Implemented with benchmark layer', done: true },
+  { feature: 'Backend API foundation', status: 'Implemented', done: true },
+  { feature: 'AI API & heuristic baseline', status: 'Implemented', done: true },
+  { feature: 'Strategy evolution experiments', status: 'In development', done: false },
+  { feature: 'Reactive testnet deployment', status: 'Pending', done: false },
+  { feature: 'Live cross-chain callbacks', status: 'Pending', done: false },
+  { feature: 'End-to-end AI & contract integration', status: 'Pending', done: false },
+];
 
 export default function SettingsPage() {
   return (
@@ -12,10 +23,10 @@ export default function SettingsPage() {
         <div>
           <h2 className="text-xl font-bold tracking-tight text-zinc-100 flex items-center gap-2">
             <Settings className="w-5 h-5 text-zinc-300" />
-            System Configuration & Risk Guard
+            System Configuration & Status Matrix
           </h2>
           <p className="text-xs text-zinc-500 mt-1">
-            Reactive Network parameters, contract trust boundaries, and off-chain AI engine settings
+            Reactive Omni Buildathon 2026 • AI proposes. Validation checks. Smart contracts enforce.
           </p>
         </div>
 
@@ -23,6 +34,43 @@ export default function SettingsPage() {
           <span className="px-2.5 py-1 rounded bg-zinc-900 border border-zinc-800">
             Version 0.1.0-alpha
           </span>
+        </div>
+      </div>
+
+      {/* Implementation Status Matrix */}
+      <div className="p-5 rounded border border-zinc-800 bg-[#0a0a0a] space-y-4">
+        <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
+          <h3 className="text-xs uppercase tracking-wider font-mono text-zinc-200 font-semibold flex items-center gap-2">
+            Current Development Status Matrix
+          </h3>
+          <span className="text-[10px] font-mono text-zinc-500">
+            Reactive Omni Buildathon 2026
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+          {STATUS_MATRIX.map((item) => (
+            <div
+              key={item.feature}
+              className="p-3 rounded bg-zinc-950 border border-zinc-900 text-xs space-y-1.5"
+            >
+              <div className="flex items-center justify-between">
+                <span className="font-medium text-zinc-300">{item.feature}</span>
+                {item.done ? (
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                ) : (
+                  <Clock className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
+                )}
+              </div>
+              <div
+                className={`text-[10px] font-mono ${
+                  item.done ? 'text-emerald-400' : 'text-zinc-500'
+                }`}
+              >
+                {item.status}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -192,4 +240,3 @@ export default function SettingsPage() {
     </div>
   );
 }
-

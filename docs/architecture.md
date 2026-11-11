@@ -1,7 +1,8 @@
 # EvolveX Architecture & Trust Boundaries
 
 > **Autonomous Intelligence. Continuous Evolution.**  
-> Powered by Reactive Network for the Reactive Omni Buildathon.
+> Built for the Reactive Omni Buildathon 2026.  
+> GitHub: [https://github.com/kaverimeshram/Evolvex](https://github.com/kaverimeshram/Evolvex)
 
 ---
 
@@ -10,94 +11,103 @@
 EvolveX is an autonomous strategy evolution engine that continuously monitors on-chain market dynamics, synthesizes algorithmic strategy mutations through an AI decision engine, executes controlled A/B experiments, and submits verified executions to destination smart contracts through Reactive Network.
 
 ```text
-┌────────────────────────────────────────────────────────────────────────┐
-│                        ORIGIN CHAIN (e.g. Sepolia)                     │
-│  Uniswap V3 / Curve Pools: [Swap / Mint / Burn / Divergence Events]    │
-└───────────────────────────────────┬────────────────────────────────────┘
-                                    │
-                         Subscribed Event Detection
-                                    │
-                                    ▼
-┌────────────────────────────────────────────────────────────────────────┐
-│                      REACTIVE NETWORK (Kopli Testnet)                  │
-│                                                                        │
-│   ReactiveStrategyMonitor.sol                                          │
-│   - Receives react(...) notification from Reactive VM                  │
-│   - Evaluates filter criteria                                          │
-│   - Dispatches cross-chain Callback                                    │
-└───────────────────────────────────┬────────────────────────────────────┘
-                                    │
-                         Cross-Chain Relay Callback
-                                    │
-                                    ▼
-┌────────────────────────────────────────────────────────────────────────┐
-│                    DESTINATION CHAIN (e.g. Sepolia)                    │
-│                                                                        │
-│   StrategyExecutor.sol                                                 │
-│   - Receives handleReactiveCallback(...)                               │
-│   - Emits StrategyEvaluationRequested(...)                            │
-└───────────────────────────────────┬────────────────────────────────────┘
-                                    │
-                          WebSocket / Event Ingest
-                                    │
-                                    ▼
-┌────────────────────────────────────────────────────────────────────────┐
-│                    OFF-CHAIN INTELLIGENCE & EVOLUTION                  │
-│                                                                        │
-│   Backend API (Fastify / Prisma) ◄──► AI Engine (Python FastAPI)      │
-│   - Records Event & State             - Analyzes market conditions     │
-│   - Coordinates Experiments           - Generates parameter mutations  │
-│   - Evaluates statistical outcome     - Simulates fitness & risk score │
-└───────────────────────────────────┬────────────────────────────────────┘
-                                    │
-                 Approved Execution Transaction (Viem / Signer)
-                                    │
-                                    ▼
-┌────────────────────────────────────────────────────────────────────────┐
-│                 CRITICAL ON-CHAIN TRUST BOUNDARY                       │
-│                                                                        │
-│   StrategyExecutor.sol ──► RiskGuard.sol (Hard Guardrails)             │
-│   - Validates authorized executor role                                 │
-│   - Checks absolute slippage ceiling (<= 500 bps)                      │
-│   - Verifies max allocation cap ($100,000 USD)                         │
-│   - Checks whitelisted target protocols only                           │
-│   - Ensures circuit breaker is inactive                                │
-│                                                                        │
-│   [IF VALID] ──► Target Protocol Action Execution                      │
-│   [IF INVALID] ──► Immediate Revert with Custom Error                  │
-└────────────────────────────────────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────┐
+│                   BLOCKCHAIN EVENTS                    │
+└───────────────────────────┬────────────────────────────┘
+                            │
+                            ▼
+┌────────────────────────────────────────────────────────┐
+│                   REACTIVE NETWORK                     │
+│                   [Event Detection]                    │
+└───────────────────────────┬────────────────────────────┘
+                            │
+                            ▼
+┌────────────────────────────────────────────────────────┐
+│              REACTIVE SMART CONTRACT                   │
+│               [Cross-chain Callback]                   │
+└───────────────────────────┬────────────────────────────┘
+                            │
+                            ▼
+┌────────────────────────────────────────────────────────┐
+│                DESTINATION CONTRACT                    │
+│           [StrategyEvaluationRequested]                │
+└───────────────────────────┬────────────────────────────┘
+                            │
+                            ▼
+┌────────────────────────────────────────────────────────┐
+│                 OFF-CHAIN AI WORKER                    │
+└───────────────────────────┬────────────────────────────┘
+                            │
+                            ▼
+┌────────────────────────────────────────────────────────┐
+│                      AI ENGINE                         │
+│             - Analyze Market Conditions                │
+│             - Generate Strategy Variants               │
+│             - Evaluate Alternative Results             │
+└───────────────────────────┬────────────────────────────┘
+                            │
+                            ▼
+┌────────────────────────────────────────────────────────┐
+│                   RISK VALIDATION                      │
+│                  [Approved Strategy]                   │
+└───────────────────────────┬────────────────────────────┘
+                            │
+                            ▼
+┌────────────────────────────────────────────────────────┐
+│              DESTINATION SMART CONTRACT                │
+│                  [Guarded Execution]                   │
+└───────────────────────────┬────────────────────────────┘
+                            │
+                            ▼
+┌────────────────────────────────────────────────────────┐
+│                    RECORD OUTCOME                      │
+└───────────────────────────┬────────────────────────────┘
+                            │
+                            ▼
+┌────────────────────────────────────────────────────────┐
+│                  EVOLUTION HISTORY                     │
+└───────────────────────────┬────────────────────────────┘
+                            │
+                            ▼
+┌────────────────────────────────────────────────────────┐
+│                   NEXT EXPERIMENT                      │
+└────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 2. Event-Driven Workflow (6-Step Lifecycle)
+## 2. Component Responsibilities
 
-1. **Event Detection on Monitored Chain**: An on-chain activity occurs (such as a large Uniswap pool swap or reserve imbalance).
-2. **Reactive Contract Notification**: The Reactive Network engine detects the event and invokes `react(...)` on `ReactiveStrategyMonitor.sol`.
-3. **Cross-Chain Callback**: The reactive monitor dispatches an asynchronous callback to `StrategyExecutor.sol` on the destination network.
-4. **AI Off-Chain Ingest**: `StrategyExecutor.sol` emits `StrategyEvaluationRequested`. The off-chain event ingest service notifies the AI Decision Engine.
-5. **Mutation & Risk Assessment**: The AI engine analyzes the event, compares current parameter performance, mutates candidate parameters, and checks predefined risk limits.
-6. **Guarded On-Chain Execution**: An authorized transaction calls `executeApprovedStrategy(...)`. The transaction is validated against immutable rules in `RiskGuard.sol` before any execution occurs.
+| Component | Responsibility |
+| :--- | :--- |
+| **Reactive Network** | Detects subscribed blockchain events and triggers callbacks |
+| **Reactive Contract** | Processes monitored events and initiates destination callbacks |
+| **Destination Contract** | Receives callbacks and coordinates execution requests |
+| **AI Worker** | Connects blockchain events with the AI engine |
+| **AI Engine** | Analyzes conditions and evaluates strategies |
+| **RiskGuard** | Enforces execution constraints |
+| **Evolution Engine** | Tracks experiments and compares strategy outcomes |
+
+> **Crucial Trust Boundary:** The separation between AI decision-making and smart contract execution is intentional.  
+> **AI proposes. Validation checks. Smart contracts enforce.**
 
 ---
 
-## 3. Trust Boundaries & Security Model
+## 3. The 6-Step Event-Driven Workflow
 
-A core architectural invariant of EvolveX is: **No unrestricted AI-controlled contract execution.**
+1. **Observe On-Chain Events**: EvolveX monitors selected blockchain events, such as liquidity changes, price movements, and other relevant protocol activity.
+2. **React to Blockchain Activity**: Reactive Network detects subscribed events and triggers a callback on the destination chain without polling RPC endpoints.
+3. **Analyze Using AI**: The destination contract emits an event (`StrategyEvaluationRequested`) that is consumed by the off-chain AI worker. The AI engine analyzes the event context, evaluates risks, and generates strategy recommendations.
+4. **Experiment with Alternative Strategies**: EvolveX evaluates different strategy configurations against predefined scenarios. Each experiment is measured against existing strategies using performance metrics and safety requirements.
+5. **Validate Before Execution**: A strategy recommendation must pass predefined risk constraints in `RiskGuard.sol` before execution. Constraints include maximum allocation limits, slippage restrictions, protocol allowlists, and emergency circuit breakers. The AI does not receive unrestricted control over execution.
+6. **Record Outcomes and Evolve**: EvolveX records experiment results, accepted strategies, rejected strategies, and their performance. Previous outcomes become context for subsequent experiments, creating a continuous strategy improvement loop.
 
-### Trust Boundary Layering
+---
 
-1. **Autonomous Off-Chain Formulation vs. On-Chain Verification**:
-   - The AI engine generates *hypotheses* and *recommendations*.
-   - The AI engine does *not* possess direct unilateral execution keys with infinite spending allowances.
+## 4. Safety Constraints & Risk Controls
 
-2. **Immutable Safety Ceilings (`RiskGuard.sol`)**:
-   - **Absolute Slippage Ceiling**: Hard limit of 500 bps (5.0%). Transactions exceeding this revert immediately regardless of AI recommendation.
-   - **Maximum Allocation Per Action**: Hard cap ($100,000 USD default) preventing catastrophic capital deployment.
-   - **Whitelisted Target Protocols Only**: Contracts can only interact with pre-approved DEX routers and pools.
-   - **Global Circuit Breaker**: Emergency administrative pause halting all automated executions if abnormal market turbulence or exploit conditions are flagged.
-
-3. **Role-Based Execution Isolation**:
-   - Callbacks must originate from verified Reactive Network proxy addresses.
-   - Strategy executions require authentication by designated executor addresses.
-
+### Immutable On-Chain Guardrails (`RiskGuard.sol`)
+- **Maximum Slippage**: Hard ceiling of 500 bps (5.0%). Transactions exceeding this revert immediately regardless of AI recommendation.
+- **Maximum Capital Allocation**: Hard cap ($100,000 USD default) preventing catastrophic single-transaction exposure.
+- **Protocol Allowlist**: Contracts can only interact with pre-approved DEX routers and liquidity pools (e.g., Uniswap V3, Curve, Balancer).
+- **Global Circuit Breaker**: Instant administrative halt pausing all automated executions if extreme market volatility or anomalies are detected.

@@ -8,7 +8,8 @@ import { StatCard } from '../components/StatCard';
 import { StrategyPerformanceChart } from '../components/StrategyPerformanceChart';
 import { EventActivityList } from '../components/EventActivityList';
 import { MockDataBadge } from '../components/MockDataBadge';
-import { Cpu, Zap, Activity, ShieldCheck, ArrowUpRight } from 'lucide-react';
+import { SimulateEventTrigger } from '../components/SimulateEventTrigger';
+import { Cpu, Zap, Activity, ShieldCheck, ArrowUpRight, Github } from 'lucide-react';
 import Link from 'next/link';
 
 export default function DashboardPage() {
@@ -22,31 +23,51 @@ export default function DashboardPage() {
       {/* Hero Welcome / Overview */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-800 pb-6">
         <div>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-400">
+              Reactive Omni Buildathon 2026
+            </span>
+            <span className="text-[10px] font-mono text-zinc-500">
+              AI proposes. Validation checks. Smart contracts enforce.
+            </span>
+          </div>
           <h2 className="text-xl font-bold tracking-tight text-zinc-100">
             System Operations
           </h2>
-          <p className="text-xs text-zinc-500 mt-1">
+          <p className="text-xs text-zinc-500 mt-0.5">
             Autonomous Intelligence. Continuous Evolution. Powered by Reactive Network.
           </p>
         </div>
 
         <div className="flex items-center gap-3">
+          <a
+            href="https://github.com/kaverimeshram/Evolvex"
+            target="_blank"
+            rel="noreferrer"
+            className="px-3 py-1.5 rounded bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-xs font-mono text-zinc-400 hover:text-zinc-200 transition-colors flex items-center gap-1.5"
+          >
+            <Github className="w-3.5 h-3.5 text-zinc-400" />
+            <span>GitHub</span>
+          </a>
           <Link
             href="/experiments"
             className="px-3.5 py-1.5 rounded bg-zinc-900 border border-zinc-700 hover:bg-zinc-800 text-xs font-medium text-zinc-200 transition-colors flex items-center gap-1.5"
           >
-            <span>View Experiments</span>
+            <span>Experiments</span>
             <ArrowUpRight className="w-3.5 h-3.5 text-zinc-400" />
           </Link>
           <Link
             href="/evolution"
             className="px-3.5 py-1.5 rounded bg-zinc-100 hover:bg-zinc-200 text-zinc-900 text-xs font-semibold transition-colors flex items-center gap-1.5"
           >
-            <span>Explore Lineage</span>
+            <span>Lineage Graph</span>
             <ArrowUpRight className="w-3.5 h-3.5 text-zinc-700" />
           </Link>
         </div>
       </div>
+
+      {/* Interactive Reactive Event Simulator */}
+      <SimulateEventTrigger />
 
       {/* Top Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -161,4 +182,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
